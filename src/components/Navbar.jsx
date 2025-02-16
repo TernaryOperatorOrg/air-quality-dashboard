@@ -33,7 +33,7 @@ function Navbar({ darkMode, toggleDarkMode, toggleSidebar }) {
   const [unreadCount] = useState(2);
 
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-md">
+    <nav className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
       <div className="max-w-full mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
