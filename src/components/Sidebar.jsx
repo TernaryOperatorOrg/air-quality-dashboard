@@ -5,6 +5,7 @@ import {
   ArrowsRightLeftIcon,
   DocumentTextIcon,
   BellIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -13,6 +14,7 @@ const navigation = [
   { name: 'Comparison', icon: ArrowsRightLeftIcon, path: '/comparison' },
   { name: 'Reports', icon: DocumentTextIcon, path: '/reports' },
   { name: 'Notifications', icon: BellIcon, path: '/notifications' },
+  { name: 'Carbon Marketplace', icon: CurrencyDollarIcon, path: '/carbon-marketplace' },
 ];
 
 function Sidebar({ isOpen }) {

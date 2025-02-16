@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot } from 'recharts';
+import LocationSearch from '../components/LocationSearch';
+import DateRangePicker from '../components/DateRangePicker';
 
 // Temporary mock data
 const anomalyData = [
@@ -12,14 +14,20 @@ const anomalyData = [
 ];
 
 function AnomalyDetection() {
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedSeverity, setSelectedSeverity] = useState('all');
-  const [dateRange, setDateRange] = useState('24h');
+  const [dateRange, setDateRange] = useState([null, null]);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <h2 className="text-2xl font-bold">Anomaly Detection</h2>
-        <div className="flex gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full md:w-auto">
+          <LocationSearch
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+            className="w-full md:w-64"
+          />
           <select
             value={selectedSeverity}
             onChange={(e) => setSelectedSeverity(e.target.value)}
@@ -30,15 +38,7 @@ function AnomalyDetection() {
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="input"
-          >
-            <option value="24h">Last 24 Hours</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-          </select>
+          <DateRangePicker onChange={setDateRange} />
         </div>
       </div>
 
@@ -71,12 +71,23 @@ function AnomalyDetection() {
       </div>
 
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">Anomaly List</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Anomaly List</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {selectedLocation ? selectedLocation.label : 'All Locations'} •{' '}
+              {dateRange[0] && dateRange[1]
+                ? `${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`
+                : 'All Time'}
+            </span>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b dark:border-gray-700">
                 <th className="py-3 px-4 text-left">Time</th>
+                <th className="py-3 px-4 text-left">Location</th>
                 <th className="py-3 px-4 text-left">Parameter</th>
                 <th className="py-3 px-4 text-left">Value</th>
                 <th className="py-3 px-4 text-left">Severity</th>
@@ -86,19 +97,25 @@ function AnomalyDetection() {
             <tbody>
               <tr className="border-b dark:border-gray-700">
                 <td className="py-3 px-4">08:00</td>
+                <td className="py-3 px-4">Station 1 - Downtown</td>
                 <td className="py-3 px-4">PM2.5</td>
                 <td className="py-3 px-4">45 µg/m³</td>
                 <td className="py-3 px-4">
-                  <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">High</span>
+                  <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-sm">
+                    High
+                  </span>
                 </td>
                 <td className="py-3 px-4">Investigating</td>
               </tr>
               <tr className="border-b dark:border-gray-700">
                 <td className="py-3 px-4">16:00</td>
+                <td className="py-3 px-4">Station 2 - Industrial</td>
                 <td className="py-3 px-4">PM10</td>
                 <td className="py-3 px-4">95 µg/m³</td>
                 <td className="py-3 px-4">
-                  <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">High</span>
+                  <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-sm">
+                    High
+                  </span>
                 </td>
                 <td className="py-3 px-4">Resolved</td>
               </tr>

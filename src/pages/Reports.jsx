@@ -1,23 +1,32 @@
 import { useState } from 'react';
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
+import LocationSearch from '../components/LocationSearch';
+import DateRangePicker from '../components/DateRangePicker';
 
 function Reports() {
-  const [reportType, setReportType] = useState('monthly');
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [reportType, setReportType] = useState('custom');
   const [reportFormat, setReportFormat] = useState('pdf');
+  const [dateRange, setDateRange] = useState([null, null]);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <h2 className="text-2xl font-bold">Reports</h2>
-        <div className="flex gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full md:w-auto">
+          <LocationSearch
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+            className="w-full md:w-64"
+          />
           <select
             value={reportType}
             onChange={(e) => setReportType(e.target.value)}
             className="input"
           >
+            <option value="custom">Custom Range</option>
             <option value="monthly">Monthly Report</option>
             <option value="yearly">Yearly Report</option>
-            <option value="custom">Custom Range</option>
           </select>
           <select
             value={reportFormat}
@@ -27,7 +36,10 @@ function Reports() {
             <option value="pdf">PDF</option>
             <option value="csv">CSV</option>
           </select>
-          <button className="btn-primary flex items-center gap-2">
+          {reportType === 'custom' && (
+            <DateRangePicker onChange={setDateRange} />
+          )}
+          <button className="btn-primary flex items-center justify-center gap-2 md:col-span-4">
             <DocumentArrowDownIcon className="h-5 w-5" />
             Generate Report
           </button>
@@ -39,9 +51,9 @@ function Reports() {
           <h3 className="text-lg font-semibold mb-4">Recent Reports</h3>
           <div className="space-y-4">
             {[
-              { name: 'March 2025 Summary', date: '2025-03-01', type: 'Monthly' },
-              { name: 'February 2025 Summary', date: '2025-02-01', type: 'Monthly' },
-              { name: '2024 Annual Report', date: '2024-12-31', type: 'Yearly' },
+              { name: 'March 2025 Summary', date: '2025-03-01', type: 'Monthly', location: 'Station 1 - Downtown' },
+              { name: 'February 2025 Summary', date: '2025-02-01', type: 'Monthly', location: 'Station 2 - Industrial' },
+              { name: '2024 Annual Report', date: '2024-12-31', type: 'Yearly', location: 'All Stations' },
             ].map((report) => (
               <div
                 key={report.name}
@@ -50,7 +62,7 @@ function Reports() {
                 <div>
                   <h4 className="font-medium">{report.name}</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Generated on {report.date}
+                    {report.location} • Generated on {report.date}
                   </p>
                 </div>
                 <button className="text-primary-600 hover:text-primary-700 dark:text-primary-400">
