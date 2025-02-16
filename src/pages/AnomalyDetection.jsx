@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ReferenceDot, BarChart, Bar } from 'recharts';
 import LocationSearch from '../components/LocationSearch';
 import DateRangePicker from '../components/DateRangePicker';
 
-// Temporary mock data
+// Enhanced mock data
 const anomalyData = [
   { time: '00:00', pm25: 12, pm10: 25, isAnomaly: false },
   { time: '04:00', pm25: 15, pm10: 30, isAnomaly: false },
@@ -11,6 +11,15 @@ const anomalyData = [
   { time: '12:00', pm25: 18, pm10: 35, isAnomaly: false },
   { time: '16:00', pm25: 52, pm10: 95, isAnomaly: true },
   { time: '20:00', pm25: 16, pm10: 32, isAnomaly: false },
+];
+
+const hourlyDistribution = [
+  { hour: '00-04', anomalies: 0 },
+  { hour: '04-08', anomalies: 1 },
+  { hour: '08-12', anomalies: 0 },
+  { hour: '12-16', anomalies: 1 },
+  { hour: '16-20', anomalies: 0 },
+  { hour: '20-24', anomalies: 0 },
 ];
 
 function AnomalyDetection() {
@@ -21,7 +30,7 @@ function AnomalyDetection() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <h2 className="text-2xl font-bold">Anomaly Detection</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Anomaly Detection</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full md:w-auto">
           <LocationSearch
             value={selectedLocation}
@@ -42,31 +51,82 @@ function AnomalyDetection() {
         </div>
       </div>
 
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">Anomaly Timeline</h3>
-        <div className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={anomalyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="pm25" stroke="#0ea5e9" name="PM2.5" />
-              <Line type="monotone" dataKey="pm10" stroke="#6366f1" name="PM10" />
-              {anomalyData.map((entry, index) => 
-                entry.isAnomaly && (
-                  <ReferenceDot
-                    key={index}
-                    x={entry.time}
-                    y={entry.pm25}
-                    r={4}
-                    fill="#ef4444"
-                    stroke="none"
-                  />
-                )
-              )}
-            </LineChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-4">Anomaly Timeline</h3>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={anomalyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="time" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="pm25" 
+                  stroke="#0090ff" 
+                  fill="#0090ff" 
+                  fillOpacity={0.2} 
+                  name="PM2.5"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="pm10" 
+                  stroke="#10b981" 
+                  fill="#10b981" 
+                  fillOpacity={0.2} 
+                  name="PM10"
+                />
+                {anomalyData.map((entry, index) => 
+                  entry.isAnomaly && (
+                    <ReferenceDot
+                      key={index}
+                      x={entry.time}
+                      y={entry.pm25}
+                      r={6}
+                      fill="#ef4444"
+                      stroke="#fff"
+                      strokeWidth={2}
+                    />
+                  )
+                )}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-4">Hourly Anomaly Distribution</h3>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={hourlyDistribution}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="hour" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Bar 
+                  dataKey="anomalies" 
+                  fill="#ef4444" 
+                  name="Anomalies"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
@@ -101,7 +161,7 @@ function AnomalyDetection() {
                 <td className="py-3 px-4">PM2.5</td>
                 <td className="py-3 px-4">45 µg/m³</td>
                 <td className="py-3 px-4">
-                  <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-sm">
+                  <span className="px-2 py-1 bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-200 rounded-full text-sm">
                     High
                   </span>
                 </td>
@@ -113,7 +173,7 @@ function AnomalyDetection() {
                 <td className="py-3 px-4">PM10</td>
                 <td className="py-3 px-4">95 µg/m³</td>
                 <td className="py-3 px-4">
-                  <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-sm">
+                  <span className="px-2 py-1 bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-200 rounded-full text-sm">
                     High
                   </span>
                 </td>

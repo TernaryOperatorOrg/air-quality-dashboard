@@ -1,9 +1,5 @@
 {
   "name": "air-quality-dashboard",
-  "author": {
-    "name": "Viraj Patil",
-    "email": "viraj05082003patil@gmail.com"
-  },
   "private": true,
   "version": "0.0.0",
   "type": "module",
