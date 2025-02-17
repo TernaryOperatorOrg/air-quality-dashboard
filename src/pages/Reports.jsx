@@ -38,7 +38,7 @@ function Reports() {
         <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800 dark:from-primary-400 dark:to-primary-600 mb-6">
           Generate Reports
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <LocationSearch
             value={selectedLocation}
             onChange={setSelectedLocation}
@@ -77,7 +77,7 @@ function Reports() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="card backdrop-blur-sm bg-white/50 dark:bg-gray-800/50">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 className="text-xl font-semibold">Recent Reports</h3>
             <button className="text-primary-600 hover:text-primary-700 dark:text-primary-400">
               View All
@@ -91,7 +91,7 @@ function Reports() {
             ].map((report) => (
               <div
                 key={report.name}
-                className="group flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+                className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 gap-4"
               >
                 <div className="flex items-start gap-4">
                   <div className="p-2 bg-primary-50 dark:bg-primary-900/30 rounded-lg">
@@ -107,7 +107,7 @@ function Reports() {
                     </p>
                   </div>
                 </div>
-                <button className="opacity-0 group-hover:opacity-100 transition-opacity text-primary-600 hover:text-primary-700 dark:text-primary-400">
+                <button className="sm:opacity-0 group-hover:opacity-100 transition-opacity text-primary-600 hover:text-primary-700 dark:text-primary-400 w-full sm:w-auto">
                   Download
                 </button>
               </div>
@@ -116,7 +116,7 @@ function Reports() {
         </div>
 
         <div className="card backdrop-blur-sm bg-white/50 dark:bg-gray-800/50">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 className="text-xl font-semibold">Report Settings</h3>
             <AdjustmentsHorizontalIcon className="h-5 w-5 text-gray-500" />
           </div>
@@ -125,7 +125,7 @@ function Reports() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Include Sections
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   'Air Quality Summary',
                   'Anomaly Analysis',

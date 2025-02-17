@@ -27,18 +27,18 @@ function Comparison() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+      <div className="flex flex-col gap-4">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Station Comparison</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full md:w-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <LocationSearch
             value={location1}
             onChange={setLocation1}
-            className="w-full md:w-64"
+            className="w-full"
           />
           <LocationSearch
             value={location2}
             onChange={setLocation2}
-            className="w-full md:w-64"
+            className="w-full"
           />
           <select
             value={parameter}
@@ -55,7 +55,7 @@ function Comparison() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
           <h3 className="text-lg font-semibold mb-4">Time Series Comparison</h3>
-          <div className="h-[400px]">
+          <div className="h-[300px] sm:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timeSeriesData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -93,7 +93,7 @@ function Comparison() {
 
         <div className="card">
           <h3 className="text-lg font-semibold mb-4">Difference Analysis</h3>
-          <div className="h-[400px]">
+          <div className="h-[300px] sm:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={differenceData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
