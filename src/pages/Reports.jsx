@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DocumentArrowDownIcon, AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Dialog } from '@headlessui/react';
 import LocationSearch from '../components/LocationSearch';
@@ -11,25 +11,116 @@ function Reports() {
   const [dateRange, setDateRange] = useState([null, null]);
   const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
   const [reportName, setReportName] = useState('');
+  const [recentReports, setRecentReports] = useState([]);
+  const [reportSettings, setReportSettings] = useState({});
+
+  useEffect(() => {
+    fetchRecentReports();
+    fetchReportSettings();
+  }, []);
+
+  const fetchRecentReports = async () => {
+    try {
+      // Fetch recent reports
+      // Expected Response:
+      // {
+      //   data: [
+      //     {
+      //       id: string,
+      //       name: string,
+      //       date: string (ISO timestamp),
+      //       type: string,
+      //       location: string,
+      //       size: string,
+      //       download_url: string
+      //     }
+      //   ]
+      // }
+      const response = await fetch('http://localhost:5000/api/reports/recent');
+      const json = await response.json();
+      setRecentReports(json.data);
+    } catch (error) {
+      console.error('Error fetching recent reports:', error);
+    }
+  };
+
+  const fetchReportSettings = async () => {
+    try {
+      // Fetch report settings
+      // Expected Response:
+      // {
+      //   data: {
+      //     sections: {
+      //       air_quality_summary: boolean,
+      //       anomaly_analysis: boolean,
+      //       sensor_health: boolean,
+      //       comparative_analysis: boolean,
+      //       weather_correlation: boolean,
+      //       trend_analysis: boolean
+      //     }
+      //   }
+      // }
+      const response = await fetch('http://localhost:5000/api/reports/settings');
+      const json = await response.json();
+      setReportSettings(json.data);
+    } catch (error) {
+      console.error('Error fetching report settings:', error);
+    }
+  };
 
   const handleGenerateReport = () => {
     setIsNameDialogOpen(true);
   };
 
-  const handleSubmitReport = () => {
+  const handleSubmitReport = async () => {
     if (!reportName.trim()) return;
     
-    // Here you would handle the report generation with the name
-    console.log('Generating report:', {
-      name: reportName,
-      type: reportType,
-      format: reportFormat,
-      location: selectedLocation,
-      dateRange,
-    });
-    
-    setIsNameDialogOpen(false);
-    setReportName('');
+    try {
+      // Generate report
+      // Expected Request Body:
+      // {
+      //   name: string,
+      //   type: string,
+      //   format: string,
+      //   location_id: string,
+      //   start_date: string (ISO timestamp),
+      //   end_date: string (ISO timestamp)
+      // }
+      // Expected Response:
+      // {
+      //   data: {
+      //     report_id: string,
+      //     download_url: string
+      //   }
+      // }
+      const response = await fetch('http://localhost:5000/api/reports/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: reportName,
+          type: reportType,
+          format: reportFormat,
+          location_id: selectedLocation?.value,
+          start_date: dateRange[0]?.toISOString(),
+          end_date: dateRange[1]?.toISOString()
+        }),
+      });
+      
+      const json = await response.json();
+      
+      // Refresh recent reports list
+      fetchRecentReports();
+      
+      setIsNameDialogOpen(false);
+      setReportName('');
+      
+      // Optionally trigger download
+      window.open(json.data.download_url, '_blank');
+    } catch (error) {
+      console.error('Error generating report:', error);
+    }
   };
 
   return (

@@ -1,121 +1,166 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CurrencyDollarIcon, ArrowTrendingUpIcon, ScaleIcon, HeartIcon, ChatBubbleLeftIcon, ShareIcon, ChartBarIcon, GlobeAmericasIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
-const carbonCredits = [
-  {
-    id: 1,
-    name: 'Renewable Energy Credits',
-    price: 25.50,
-    available: 1000,
-    type: 'Solar',
-    location: 'California, USA',
-    verified: true,
-    impact: '500 tons CO₂ offset',
-    provider: 'Green Energy Corp',
-    rating: 4.8,
-  },
-  {
-    id: 2,
-    name: 'Forest Conservation Credits',
-    price: 18.75,
-    available: 500,
-    type: 'Forestry',
-    location: 'Amazon, Brazil',
-    verified: true,
-    impact: '750 tons CO₂ offset',
-    provider: 'Rainforest Alliance',
-    rating: 4.9,
-  },
-  {
-    id: 3,
-    name: 'Methane Capture Credits',
-    price: 15.25,
-    available: 750,
-    type: 'Industrial',
-    location: 'Texas, USA',
-    verified: true,
-    impact: '300 tons CO₂ offset',
-    provider: 'Clean Industry Solutions',
-    rating: 4.7,
-  },
-];
-
-const achievements = [
-  {
-    id: 1,
-    author: 'Green Energy Corp',
-    avatar: 'https://ui-avatars.com/api/?name=Green+Energy&background=0D9488&color=fff',
-    type: 'company',
-    content: "Proud to announce we've reduced our carbon emissions by 40% this year through implementing new solar technology! 🌱",
-    image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    likes: 245,
-    comments: 28,
-    timestamp: '2h ago',
-    liked: false,
-  },
-  {
-    id: 2,
-    author: 'EcoTech Solutions',
-    avatar: 'https://ui-avatars.com/api/?name=EcoTech+Solutions&background=2563EB&color=fff',
-    type: 'company',
-    content: "Just completed our largest carbon credit trade to date - 1000 credits from wind energy projects! Together, we're making a difference. 🌍",
-    likes: 189,
-    comments: 15,
-    timestamp: '4h ago',
-    liked: false,
-  },
-  {
-    id: 3,
-    author: 'Sarah Chen',
-    avatar: 'https://ui-avatars.com/api/?name=Sarah+Chen&background=DB2777&color=fff',
-    type: 'individual',
-    content: "Excited to share that our community initiative has helped plant 10,000 trees this month! Every small action counts. 🌳",
-    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    likes: 423,
-    comments: 45,
-    timestamp: '6h ago',
-    liked: false,
-  },
-];
-
 function CarbonMarketplace() {
   const [selectedType, setSelectedType] = useState('all');
-  const [posts, setPosts] = useState(achievements);
+  const [marketStats, setMarketStats] = useState(null);
+  const [carbonCredits, setCarbonCredits] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
 
-  const handleLike = (postId) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          liked: !post.liked,
-          likes: post.liked ? post.likes - 1 : post.likes + 1
-        };
-      }
-      return post;
-    }));
+  useEffect(() => {
+    fetchMarketData();
+    fetchCommunityPosts();
+  }, [selectedType]);
+
+  const fetchMarketData = async () => {
+    try {
+      // Fetch market statistics
+      // Expected Response:
+      // {
+      //   data: {
+      //     average_price: number,
+      //     market_volume: number,
+      //     total_impact: number
+      //   }
+      // }
+      const statsResponse = await fetch('http://localhost:5000/api/carbon-market/stats');
+      const statsJson = await statsResponse.json();
+      setMarketStats(statsJson.data);
+
+      // Fetch available carbon credits
+      // Expected Response:
+      // {
+      //   data: [
+      //     {
+      //       id: string,
+      //       name: string,
+      //       price: number,
+      //       available: number,
+      //       type: string,
+      //       location: string,
+      //       verified: boolean,
+      //       impact: string,
+      //       provider: string,
+      //       rating: number
+      //     }
+      //   ]
+      // }
+      const creditsResponse = await fetch(`http://localhost:5000/api/carbon-market/credits?type=${selectedType}`);
+      const creditsJson = await creditsResponse.json();
+      setCarbonCredits(creditsJson.data);
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+    }
   };
 
-  const handleSubmitPost = (e) => {
+  const fetchCommunityPosts = async () => {
+    try {
+      // Fetch community posts
+      // Expected Response:
+      // {
+      //   data: [
+      //     {
+      //       id: string,
+      //       author: string,
+      //       avatar: string,
+      //       type: "company" | "individual",
+      //       content: string,
+      //       image?: string,
+      //       likes: number,
+      //       comments: number,
+      //       timestamp: string,
+      //       liked: boolean
+      //     }
+      //   ]
+      // }
+      const response = await fetch('http://localhost:5000/api/carbon-market/community');
+      const json = await response.json();
+      setPosts(json.data);
+    } catch (error) {
+      console.error('Error fetching community posts:', error);
+    }
+  };
+
+  const handleLike = async (postId) => {
+    try {
+      // Toggle like status
+      // Expected Request:
+      // POST /api/carbon-market/community/like
+      // Body: { post_id: string }
+      // Expected Response:
+      // {
+      //   data: {
+      //     liked: boolean,
+      //     likes: number
+      //   }
+      // }
+      const response = await fetch('http://localhost:5000/api/carbon-market/community/like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ post_id: postId }),
+      });
+      const json = await response.json();
+      
+      setPosts(posts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            liked: json.data.liked,
+            likes: json.data.likes
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
+
+  const handleSubmitPost = async (e) => {
     e.preventDefault();
     if (!newPost.trim()) return;
 
-    const newAchievement = {
-      id: posts.length + 1,
-      author: 'You',
-      avatar: 'https://ui-avatars.com/api/?name=You&background=9333EA&color=fff',
-      type: 'individual',
-      content: newPost,
-      likes: 0,
-      comments: 0,
-      timestamp: 'Just now',
-      liked: false,
-    };
-
-    setPosts([newAchievement, ...posts]);
-    setNewPost('');
+    try {
+      // Submit new post
+      // Expected Request:
+      // POST /api/carbon-market/community/post
+      // Body: { content: string }
+      // Expected Response:
+      // {
+      //   data: {
+      //     id: string,
+      //     author: string,
+      //     avatar: string,
+      //     type: "individual",
+      //     content: string,
+      //     likes: number,
+      //     comments: number,
+      //     timestamp: string,
+      //     liked: boolean
+      //   }
+      // }
+      const response = await fetch('http://localhost:5000/api/carbon-market/community/post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: newPost }),
+      });
+      const json = await response.json();
+      setPosts([json.data, ...posts]);
+      setNewPost('');
+    } catch (error) {
+      console.error('Error submitting post:', error);
+    }
   };
+
+  if (!marketStats) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -132,7 +177,7 @@ function CarbonMarketplace() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Average Price</p>
-                <p className="text-2xl font-bold text-success-600 dark:text-success-400">$19.83</p>
+                <p className="text-2xl font-bold text-success-600 dark:text-success-400">${marketStats.average_price}</p>
               </div>
             </div>
           </div>
@@ -144,7 +189,7 @@ function CarbonMarketplace() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Market Volume</p>
-                <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">2,250</p>
+                <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">{marketStats.market_volume}</p>
               </div>
             </div>
           </div>
@@ -156,7 +201,7 @@ function CarbonMarketplace() {
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Impact</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">1,550t</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{marketStats.total_impact}t</p>
               </div>
             </div>
           </div>

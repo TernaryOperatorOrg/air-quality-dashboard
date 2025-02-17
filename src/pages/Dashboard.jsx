@@ -1,26 +1,103 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import LocationSearch from '../components/LocationSearch';
 
-// Enhanced mock data
-const timeSeriesData = [
-  { time: '00:00', pm25: 12, pm10: 25 },
-  { time: '04:00', pm25: 15, pm10: 30 },
-  { time: '08:00', pm25: 20, pm10: 40 },
-  { time: '12:00', pm25: 18, pm10: 35 },
-  { time: '16:00', pm25: 22, pm10: 45 },
-  { time: '20:00', pm25: 16, pm10: 32 },
-];
-
-const radarData = [
-  { metric: 'Morning', pm25: 15, pm10: 30 },
-  { metric: 'Noon', pm25: 20, pm10: 40 },
-  { metric: 'Evening', pm25: 22, pm10: 45 },
-  { metric: 'Night', pm25: 12, pm10: 25 },
-];
-
 function Dashboard() {
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [currentData, setCurrentData] = useState(null);
+  const [timeSeriesData, setTimeSeriesData] = useState([]);
+  const [comparisonData, setComparisonData] = useState([]);
+  const [distributionData, setDistributionData] = useState([]);
+  const [timeOfDayData, setTimeOfDayData] = useState([]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [selectedLocation]);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch current readings
+      // Expected Response:
+      // {
+      //   data: {
+      //     pm25: number,
+      //     pm10: number,
+      //     anomalies_24h: number,
+      //     sensor_status: number
+      //   }
+      // }
+      const currentResponse = await fetch(`http://localhost:5000/api/dashboard/current?location_id=${selectedLocation?.value || ''}`);
+      const currentJson = await currentResponse.json();
+      setCurrentData(currentJson.data);
+
+      // Fetch time series data
+      // Expected Response:
+      // {
+      //   data: [
+      //     {
+      //       time: string (ISO timestamp),
+      //       pm25: number,
+      //       pm10: number
+      //     }
+      //   ]
+      // }
+      const timeSeriesResponse = await fetch(`http://localhost:5000/api/dashboard/timeseries?location_id=${selectedLocation?.value || ''}`);
+      const timeSeriesJson = await timeSeriesResponse.json();
+      setTimeSeriesData(timeSeriesJson.data);
+
+      // Fetch 24-hour comparison data
+      // Expected Response:
+      // {
+      //   data: [
+      //     {
+      //       time: string (ISO timestamp),
+      //       pm25: number,
+      //       pm10: number
+      //     }
+      //   ]
+      // }
+      const comparisonResponse = await fetch(`http://localhost:5000/api/dashboard/comparison?location_id=${selectedLocation?.value || ''}`);
+      const comparisonJson = await comparisonResponse.json();
+      setComparisonData(comparisonJson.data);
+
+      // Fetch hourly distribution data
+      // Expected Response:
+      // {
+      //   data: [
+      //     {
+      //       time: string (format: "HH:00"),
+      //       pm25: number,
+      //       pm10: number
+      //     }
+      //   ]
+      // }
+      const distributionResponse = await fetch(`http://localhost:5000/api/dashboard/distribution?location_id=${selectedLocation?.value || ''}`);
+      const distributionJson = await distributionResponse.json();
+      setDistributionData(distributionJson.data);
+
+      // Fetch time of day analysis data
+      // Expected Response:
+      // {
+      //   data: [
+      //     {
+      //       metric: string ("Morning" | "Noon" | "Evening" | "Night"),
+      //       pm25: number,
+      //       pm10: number
+      //     }
+      //   ]
+      // }
+      const timeOfDayResponse = await fetch(`http://localhost:5000/api/dashboard/timeofday?location_id=${selectedLocation?.value || ''}`);
+      const timeOfDayJson = await timeOfDayResponse.json();
+      setTimeOfDayData(timeOfDayJson.data);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      // Handle error state here
+    }
+  };
+
+  if (!currentData) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -36,22 +113,22 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/50 dark:to-primary-800/50">
           <h3 className="text-lg font-semibold mb-2 text-primary-900 dark:text-primary-100">PM2.5</h3>
-          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">18 µg/m³</p>
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">{currentData.pm25} µg/m³</p>
           <p className="text-sm text-primary-700 dark:text-primary-300">Current Level</p>
         </div>
         <div className="card bg-gradient-to-br from-success-50 to-success-100 dark:from-success-900/50 dark:to-success-800/50">
           <h3 className="text-lg font-semibold mb-2 text-success-900 dark:text-success-100">PM10</h3>
-          <p className="text-3xl font-bold text-success-600 dark:text-success-400">35 µg/m³</p>
+          <p className="text-3xl font-bold text-success-600 dark:text-success-400">{currentData.pm10} µg/m³</p>
           <p className="text-sm text-success-700 dark:text-success-300">Current Level</p>
         </div>
         <div className="card bg-gradient-to-br from-danger-50 to-danger-100 dark:from-danger-900/50 dark:to-danger-800/50">
           <h3 className="text-lg font-semibold mb-2 text-danger-900 dark:text-danger-100">Anomalies</h3>
-          <p className="text-3xl font-bold text-danger-600 dark:text-danger-400">3</p>
+          <p className="text-3xl font-bold text-danger-600 dark:text-danger-400">{currentData.anomalies_24h}</p>
           <p className="text-sm text-danger-700 dark:text-danger-300">Last 24 hours</p>
         </div>
         <div className="card bg-gradient-to-br from-success-50 to-success-100 dark:from-success-900/50 dark:to-success-800/50">
           <h3 className="text-lg font-semibold mb-2 text-success-900 dark:text-success-100">Sensor Status</h3>
-          <p className="text-3xl font-bold text-success-600 dark:text-success-400">98%</p>
+          <p className="text-3xl font-bold text-success-600 dark:text-success-400">{currentData.sensor_status}%</p>
           <p className="text-sm text-success-700 dark:text-success-300">Operational</p>
         </div>
       </div>
@@ -63,7 +140,11 @@ function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timeSeriesData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="time" stroke="#6b7280" />
+                <XAxis 
+                  dataKey="time" 
+                  stroke="#6b7280"
+                  tickFormatter={(time) => new Date(time).toLocaleTimeString()} 
+                />
                 <YAxis stroke="#6b7280" />
                 <Tooltip 
                   contentStyle={{ 
@@ -72,6 +153,7 @@ function Dashboard() {
                     borderRadius: '0.5rem',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
+                  labelFormatter={(time) => new Date(time).toLocaleString()}
                 />
                 <Area 
                   type="monotone" 
@@ -98,9 +180,13 @@ function Dashboard() {
           <h3 className="text-lg font-semibold mb-4">24-Hour Comparison</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={timeSeriesData}>
+              <LineChart data={comparisonData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="time" stroke="#6b7280" />
+                <XAxis 
+                  dataKey="time" 
+                  stroke="#6b7280"
+                  tickFormatter={(time) => new Date(time).toLocaleTimeString()} 
+                />
                 <YAxis stroke="#6b7280" />
                 <Tooltip 
                   contentStyle={{ 
@@ -109,6 +195,7 @@ function Dashboard() {
                     borderRadius: '0.5rem',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
+                  labelFormatter={(time) => new Date(time).toLocaleString()}
                 />
                 <Line 
                   type="monotone" 
@@ -135,7 +222,7 @@ function Dashboard() {
           <h3 className="text-lg font-semibold mb-4">Hourly Distribution</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timeSeriesData}>
+              <BarChart data={distributionData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="time" stroke="#6b7280" />
                 <YAxis stroke="#6b7280" />
@@ -168,7 +255,7 @@ function Dashboard() {
           <h3 className="text-lg font-semibold mb-4">Time of Day Analysis</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData}>
+              <RadarChart data={timeOfDayData}>
                 <PolarGrid stroke="#e5e7eb" />
                 <PolarAngleAxis dataKey="metric" stroke="#6b7280" />
                 <PolarRadiusAxis stroke="#6b7280" />
